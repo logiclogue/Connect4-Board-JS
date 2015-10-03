@@ -49,7 +49,7 @@ var Connect4Board = function() {
 			contents[x] = [];
 		}
 
-		if (mod.game.substring(0, 1) == "Y") {
+		if (mod.game[0] === "Y") {
 			colour1 = "R";
 			colour2 = "Y";
 		} else {
@@ -58,11 +58,11 @@ var Connect4Board = function() {
 		}
 
 		for (var i = 1; i < mod.cursor.pos+1; i++) {
-			if (i % 2 == 0) colour = colour1;
+			if (i % 2 === 0) colour = colour1;
 			else colour = colour2;
 
 			// select last piece placed
-			if (i == mod.cursor.pos) colour += "s";
+			if (i === mod.cursor.pos) colour += "s";
 
 			var num = parseInt(mod.game.substring(i, i+1));
 			contents[num].push(colour);
@@ -72,7 +72,7 @@ var Connect4Board = function() {
 	var fillContents = function() {
 		for (var x = 0; x < 7; x++) {
 			for (var y = 0; y < 6; y++) {
-				if (contents[x][y] == undefined) contents[x][y] = "  ";
+				if (contents[x][y] === undefined) contents[x][y] = "  ";
 			}
 		}
 	};
