@@ -1,39 +1,43 @@
 var Connect4Board = function() {
-	var mod = {};
+	var self = this;
 
 
-	var c, ctx, width, height, scale, contents = [];
+	var c,
+		ctx,
+		width,
+		height,
+		scale,
+		board = [],
+		col = {
+			blue: "#4A89DC",
+			green: "#8CC152",
+			red: "#E9573F",
+			yellow: "#F6BB42",
+			white: "#FFFFFF",
+			black: "#434A54",
+			light_yellow: "#FFCE54",
+			light_red: "#FC6E51",
+			light_green: "#A0D468",
+			light_blue: "#5D9CEC"
+		};
 
+	self.game = "";
+	self.cursor = 0;
+	self.flip = false;
+	self.input = false;
+	self.slot = 7;
+	self.winner = 0;
+
+	// make board a multidimentional array
 	for (var x = 0; x < 7; x++) {
-		contents[x] = [];
+		board[x] = [];
 	}
-
-	mod.game = "";
-	mod.cursor = 0;
-	mod.flip = false;
-	mod.input = false;
-	mod.slot = 7;
-	mod.winner = 0;
-
-
-	// colours
-	var col = {
-		blue: "#4A89DC",
-		green: "#8CC152",
-		red: "#E9573F",
-		yellow: "#F6BB42",
-		white: "#FFFFFF",
-		black: "#434A54",
-		light_yellow: "#FFCE54",
-		light_red: "#FC6E51",
-		light_green: "#A0D468",
-		light_blue: "#5D9CEC"
-	};
+	
 	
 	// easier to draw circles
-	var drawCircle = function(centreX, centreY, radius, colourFill, colourLine) {
+	var drawCircle = function (centreX, centreY, radius, colourFill, colourLine) {
 		ctx.beginPath();
-		ctx.arc(centreX, centreY, radius, 0, 2*Math.PI, false);
+		ctx.arc(centreX, centreY, radius, 0, 2 * Math.PI, false);
 		ctx.fillStyle = colourFill;
 		ctx.fill();
 		ctx.lineWidth = width/100;
@@ -41,126 +45,176 @@ var Connect4Board = function() {
 		ctx.stroke();
 	};
 
-	// updates the contents array
-	var update = function() {
-		var colour, colour1, colour2;
+	// updates the board array
+	var update = function () {
+		var colour,
+			colour1,
+			colour2,
+			num;
 
+		// reset board array
 		for (var x = 0; x < 7; x++) {
-			contents[x] = [];
+			board[x] = [];
 		}
 
-		if (mod.game[0] === "Y") {
+		// find out starting colour
+		if (self.game[0] === "Y") {
 			colour1 = "R";
 			colour2 = "Y";
-		} else {
+		}
+		else {
 			colour1 = "Y";
 			colour2 = "R";
 		}
 
-		for (var i = 1; i < mod.cursor.pos+1; i++) {
-			if (i % 2 === 0) colour = colour1;
-			else colour = colour2;
+		// loop through game string
+		for (var i = 1, max = self.cursor.pos; i <= max; i += 1) {
+			// find out current colour
+			if (i % 2 === 0) {
+				colour = colour1;
+			}
+			else {
+				colour = colour2;
+			}
 
-			// select last piece placed
-			if (i === mod.cursor.pos) colour += "s";
+			// select last piece
+			if (i === self.cursor.pos) {
+				colour += "s";
+			}
 
-			var num = parseInt(mod.game.substring(i, i+1));
-			contents[num].push(colour);
+			// place the piece colour in the board array
+			num = parseInt(self.game[i]);
+			board[num].push(colour);
 		}
 	};
 	
-	var fillContents = function() {
+	var fillBoard = function () {
 		for (var x = 0; x < 7; x++) {
 			for (var y = 0; y < 6; y++) {
-				if (contents[x][y] === undefined) contents[x][y] = "  ";
+				// fill in undefined gaps
+				if (board[x][y] === undefined) {
+					board[x][y] = "  ";
+				}
 			}
 		}
 	};
 
-	// checks to see if there is a connect 4
-	var checkWin = function(col) {
+	// check to see if there is a four in a row
+	var checkWin = function (col) {
 		// check horizontal
-		for (var x = 0; x < 4; x++) {
-			for (var y = 0; y < 6; y++) {
-				if (contents[x][y].substring(0, 1) == col && contents[x+1][y].substring(0, 1) == col && contents[x+2][y].substring(0, 1) == col && contents[x+3][y].substring(0, 1) == col) {
-					contents[x][y] += "s";
-					contents[x+1][y] += "s";
-					contents[x+2][y] += "s";
-					contents[x+3][y] += "s";
+		for (var x = 0; x < 4; x += 1) {
+			for (var y = 0; y < 6; y += 1) {
+				if (board[x][y][0] === col && board[x+1][y][0] === col && board[x+2][y][0] === col && board[x+3][y][0] === col) {
+					// select connected pieces
+					board[x][y] += "s";
+					board[x+1][y] += "s";
+					board[x+2][y] += "s";
+					board[x+3][y] += "s";
 
-					if (col == mod.game.substring(0, 1)) mod.winner = 1;
-					else mod.winner = 2;
+					// select winner
+					if (col === self.game[0]) {
+						self.winner = 1;
+					}
+					else {
+						self.winner = 2;
+					}
 				}
 			}
 		}
 		// check / diagonal
-		for (var x = 0; x < 4; x++) {
-			for (var y = 0; y < 3; y++) {
-				if (contents[x][y].substring(0, 1) == col && contents[x+1][y+1].substring(0, 1) == col && contents[x+2][y+2].substring(0, 1) == col && contents[x+3][y+3].substring(0, 1) == col) {
-					contents[x][y] += "s";
-					contents[x+1][y+1] += "s";
-					contents[x+2][y+2] += "s";
-					contents[x+3][y+3] += "s";
+		for (var x = 0; x < 4; x += 1) {
+			for (var y = 0; y < 3; y += 1) {
+				if (board[x][y][0] === col && board[x+1][y+1][0] === col && board[x+2][y+2][0] === col && board[x+3][y+3][0] === col) {
+					// select connected pieces
+					board[x][y] += "s";
+					board[x+1][y+1] += "s";
+					board[x+2][y+2] += "s";
+					board[x+3][y+3] += "s";
 
-					if (col == mod.game.substring(0, 1)) mod.winner = 1;
-					else mod.winner = 2;
-
+					// select winner
+					if (col == self.game[0]) {
+						self.winner = 1;
+					}
+					else {
+						self.winner = 2;
+					}
 				}
 			}
 		}
 		// check \ diagonal
-		for (var x = 3; x < 7; x++) {
-			for (var y = 0; y < 3; y++) {
-				if (contents[x][y].substring(0, 1) == col && contents[x-1][y+1].substring(0, 1) == col && contents[x-2][y+2].substring(0, 1) == col && contents[x-3][y+3].substring(0, 1) == col) {
-					contents[x][y] += "s";
-					contents[x-1][y+1] += "s";
-					contents[x-2][y+2] += "s";
-					contents[x-3][y+3] += "s";
+		for (var x = 3; x < 7; x += 1) {
+			for (var y = 0; y < 3; y += 1) {
+				if (board[x][y][0] === col && board[x-1][y+1][0] === col && board[x-2][y+2][0] === col && board[x-3][y+3][0] === col) {
+					// select connected pieces
+					board[x][y] += "s";
+					board[x-1][y+1] += "s";
+					board[x-2][y+2] += "s";
+					board[x-3][y+3] += "s";
 
-					if (col == mod.game.substring(0, 1)) mod.winner = 1;
-					else mod.winner = 2;
-
+					// select winner
+					if (col === self.game[0]) {
+						self.winner = 1;
+					}
+					else {
+						self.winner = 2;
+					}
 				}
 			}
 		}
 		// check vertical
-		for (var x = 0; x < 7; x++) {
-			for (var y = 0; y < 3; y++) {
-				if (contents[x][y].substring(0, 1) == col && contents[x][y+1].substring(0, 1) == col && contents[x][y+2].substring(0, 1) == col && contents[x][y+3].substring(0, 1) == col) {
-					contents[x][y] += "s";
-					contents[x][y+1] += "s";
-					contents[x][y+2] += "s";
-					contents[x][y+3] += "s";
+		for (var x = 0; x < 7; x += 1) {
+			for (var y = 0; y < 3; y += 1) {
+				if (board[x][y][0] === col && board[x][y+1][0] === col && board[x][y+2][0] === col && board[x][y+3][0] === col) {
+					// select connected pieces
+					board[x][y] += "s";
+					board[x][y+1] += "s";
+					board[x][y+2] += "s";
+					board[x][y+3] += "s";
 
-					if (col == mod.game.substring(0, 1)) mod.winner = 1;
-					else mod.winner = 2;
-
+					// select winner
+					if (col === self.game[0]) {
+						self.winner = 1;
+					}
+					else {
+						self.winner = 2;
+					}
 				}
 			}
 		}
 
 	};
 
-	function click(e) {
-		var rect = c.getBoundingClientRect();
-		var x = e.clientX - rect.left;
-		var y = e.clientY - rect.top;
-		var slot = Math.floor((x / (rect.right - rect.left)) * 7);
-		var colour1, colour2;
+	var click = function (e) {
+		var rect = c.getBoundingClientRect(),
+			x = e.clientX - rect.left,
+			y = e.clientY - rect.top,
+			slot = Math.floor((x / (rect.right - rect.left)) * 7),
+			colour1,
+			colour2;
 
-		if (mod.flip) mod.slot = 6-slot;
-		else mod.slot = slot;
+		if (self.flip) {
+			self.slot = 6 - slot;
+		}
+		else {
+			self.slot = slot;
+		}
 
-		if (!mod.input || contents[mod.slot][5] != "  ") mod.slot = slot = 7;
+		if (!self.input || board[self.slot][5] !== "  ") {
+			self.slot = slot = 7;
+		}
 
-		if (mod.input) mod.draw();
+		if (self.input) {
+			self.draw();
+		}
 	}
 
 	
 
 
 	// public methods
-	mod.setCanvas = function(canvas) {
+
+	// assigns canvas
+	self.setCanvas = function (canvas) {
 		c = document.getElementById(canvas);
 		ctx = c.getContext("2d");
 		width = c.width;
@@ -170,71 +224,101 @@ var Connect4Board = function() {
 	};
 
 	// cursor position when playing back a game
-	mod.cursor = function() {
-		var mod_0 = {};
+	self.cursor = (function () {
+		var mod = {};
 
 		
-		mod_0.pos = 0;
+		mod.pos = 0;
 
 		// cursor step forward
-		mod_0.next = function() {
-			if (mod_0.pos != mod.game.length - 1) mod_0.pos++;
+		mod.next = function () {
+			if (mod.pos !== self.game.length - 1) {
+				mod.pos += 1;
+			}
 		};
 
 		// cursor step backward
-		mod_0.back = function() {
-			if (mod_0.pos != 0) mod_0.pos--;
+		mod.back = function () {
+			if (mod.pos !== 0) {
+				mod.pos -= 1;
+			}
 		};
 
 		// cursor jump to first
-		mod_0.first = function() {
-			mod_0.pos = 0;
+		mod.first = function () {
+			mod.pos = 0;
 		};
 
 		// cursor jump to last
-		mod_0.last = function() {
-			mod_0.pos = mod.game.length - 1;
+		mod.last = function () {
+			mod.pos = self.game.length - 1;
 		};
 
 
-		return mod_0;
-	}();
+		return mod;
+	}());
 
-	mod.draw = function() {
+	self.draw = function () {
+		var colour1,
+			colour2,
+			xt,
+			yt;
+
+		// refill board then check win
 		update();
-		fillContents();
+		fillBoard();
 		checkWin("R");
 		checkWin("Y");
 
+		// clear the canvas
 		ctx.clearRect(0, 0, width, height);
 		// draw background
 		ctx.fillStyle = col.blue;
 		ctx.fillRect(0, height/7, width, (height/7)*6);
-		
-		var colour1, colour2, xt, yt;
 
 		for (var x = 0; x < 7; x++) {
 			for (var y = 0; y < 6; y++) {
-				if (contents[x][y].substring(0, 1) == "R") { colour1 = col.red; colour2 = col.light_red; }
-				else if (contents[x][y].substring(0, 1) == "Y") { colour1 = col.yellow; colour2 = col.light_yellow; }
-				else { colour1 = col.white; colour2 = col.white; }
+				if (board[x][y][0] === "R") {
+					colour1 = col.red;
+					colour2 = col.light_red;
+				}
+				else if (board[x][y][0] == "Y") {
+					colour1 = col.yellow;
+					colour2 = col.light_yellow;
+				}
+				else {
+					colour1 = col.white;
+					colour2 = col.white;
+				}
 
-				yt = 5-y;
-				if (mod.flip) xt = 6-x;
-				else xt = x;
+				yt = 5 - y;
+				if (self.flip) {
+					xt = 6 - x;
+				}
+				else {
+					xt = x
+				};
 
-				drawCircle((width/7)*(xt+0.5), (height/7)*(yt+1.5), width/20, colour1, colour2);
+				drawCircle((width / 7) * (xt + 0.5), (height / 7) * (yt + 1.5), width / 20, colour1, colour2);
 
-				if (contents[x][y].substring(1, 2) == "s") drawCircle((width/7)*(xt+0.5), (height/7)*(yt+1.5), width/200, col.black, col.black);
+				if (board[x][y][1] === "s") {
+					drawCircle((width / 7) * (xt + 0.5), (height / 7) * (yt + 1.5), width / 200, col.black, col.black);
+				}
 			
-				if ((mod.game.length % 2 == 0 && mod.game.substring(0, 1) == "R") || (mod.game.length % 2 != 0 && mod.game.substring(0, 1) == "Y")) { colour1 = col.yellow; colour2 = col.light_yellow; }
-				else { colour1 = col.red; colour2 = col.light_red; }
+				if ((self.game.length % 2 === 0 && self.game[0] === "R") || (self.game.length % 2 !== 0 && self.game[0] === "Y")) {
+					colour1 = col.yellow;
+					colour2 = col.light_yellow;
+				}
+				else {
+					colour1 = col.red;
+					colour2 = col.light_red;
+				}
 				
-				if (x == mod.slot && contents[x][5] == "  " && mod.input) drawCircle((width/7)*(xt+0.5), (height/7)*0.5, width/20, colour1, colour2);
+				if (x === self.slot && board[x][5] === "  " && self.input) {
+					drawCircle((width / 7) * (xt + 0.5), (height / 7) * 0.5, width / 20, colour1, colour2);
+				}
 			}
 		}
 	};
 
-
-	return mod;
 }
