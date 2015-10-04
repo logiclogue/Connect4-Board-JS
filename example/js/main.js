@@ -4,5 +4,6 @@
 	board.setCanvas("canvas-board");
 	board.game = "R3434343";
 	board.cursor.last();
+	board.input = true;
 	board.draw();
 }());

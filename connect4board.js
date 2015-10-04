@@ -33,17 +33,22 @@ var Connect4Board = function() {
 		board[x] = [];
 	}
 	
+
 	
+
+	// private methods
+
 	// easier to draw circles
 	var drawCircle = function (centreX, centreY, radius, colourFill, colourLine) {
 		ctx.beginPath();
 		ctx.arc(centreX, centreY, radius, 0, 2 * Math.PI, false);
 		ctx.fillStyle = colourFill;
 		ctx.fill();
-		ctx.lineWidth = width/100;
+		ctx.lineWidth = width / 100;
 		ctx.strokeStyle = colourLine;
 		ctx.stroke();
 	};
+
 
 	// updates the board array
 	var update = function () {
@@ -88,6 +93,8 @@ var Connect4Board = function() {
 		}
 	};
 	
+
+	// empty board array of undefined variables
 	var fillBoard = function () {
 		for (var x = 0; x < 7; x++) {
 			for (var y = 0; y < 6; y++) {
@@ -98,6 +105,66 @@ var Connect4Board = function() {
 			}
 		}
 	};
+
+
+	// draw the board
+	var drawBoard = function () {
+		var colour1,
+			colour2,
+			xt,
+			yt;
+
+		// clear the canvas
+		ctx.clearRect(0, 0, width, height);
+		// draw background
+		ctx.fillStyle = col.blue;
+		ctx.fillRect(0, height/7, width, (height/7)*6);
+
+		for (var x = 0; x < 7; x++) {
+			for (var y = 0; y < 6; y++) {
+				if (board[x][y][0] === "R") {
+					colour1 = col.red;
+					colour2 = col.light_red;
+				}
+				else if (board[x][y][0] == "Y") {
+					colour1 = col.yellow;
+					colour2 = col.light_yellow;
+				}
+				else {
+					colour1 = col.white;
+					colour2 = col.white;
+				}
+
+				yt = 5 - y;
+				if (self.flip) {
+					xt = 6 - x;
+				}
+				else {
+					xt = x
+				};
+
+				drawCircle((width / 7) * (xt + 0.5), (height / 7) * (yt + 1.5), width / 20, colour1, colour2);
+
+				if (board[x][y][1] === "s") {
+					drawCircle((width / 7) * (xt + 0.5), (height / 7) * (yt + 1.5), width / 200, col.black, col.black);
+				}
+			
+				if ((self.game.length % 2 === 0 && self.game[0] === "R") || (self.game.length % 2 !== 0 && self.game[0] === "Y")) {
+					colour1 = col.yellow;
+					colour2 = col.light_yellow;
+				}
+				else {
+					colour1 = col.red;
+					colour2 = col.light_red;
+				}
+				
+				if (x === self.slot && board[x][5] === "  " && self.input) {
+					drawCircle((width / 7) * (xt + 0.5), (height / 7) * 0.5, width / 20, colour1, colour2);
+				}
+			}
+		}
+	};
+
 
 	// check to see if there is a four in a row
 	var checkWin = function (col) {
@@ -184,6 +251,8 @@ var Connect4Board = function() {
 
 	};
 
+
+	// click event function
 	var click = function (e) {
 		var rect = c.getBoundingClientRect(),
 			x = e.clientX - rect.left,
@@ -204,11 +273,11 @@ var Connect4Board = function() {
 		}
 
 		if (self.input) {
-			self.draw();
+			drawBoard();
 		}
 	}
 
-	
+
 
 
 	// public methods
@@ -222,6 +291,7 @@ var Connect4Board = function() {
 	
 		c.addEventListener("mousemove", click);
 	};
+
 
 	// cursor position when playing back a game
 	self.cursor = (function () {
@@ -258,67 +328,13 @@ var Connect4Board = function() {
 		return mod;
 	}());
 
-	self.draw = function () {
-		var colour1,
-			colour2,
-			xt,
-			yt;
 
-		// refill board then check win
+	self.draw = function () {
 		update();
 		fillBoard();
 		checkWin("R");
 		checkWin("Y");
-
-		// clear the canvas
-		ctx.clearRect(0, 0, width, height);
-		// draw background
-		ctx.fillStyle = col.blue;
-		ctx.fillRect(0, height/7, width, (height/7)*6);
-
-		for (var x = 0; x < 7; x++) {
-			for (var y = 0; y < 6; y++) {
-				if (board[x][y][0] === "R") {
-					colour1 = col.red;
-					colour2 = col.light_red;
-				}
-				else if (board[x][y][0] == "Y") {
-					colour1 = col.yellow;
-					colour2 = col.light_yellow;
-				}
-				else {
-					colour1 = col.white;
-					colour2 = col.white;
-				}
-
-				yt = 5 - y;
-				if (self.flip) {
-					xt = 6 - x;
-				}
-				else {
-					xt = x
-				};
-
-				drawCircle((width / 7) * (xt + 0.5), (height / 7) * (yt + 1.5), width / 20, colour1, colour2);
-
-				if (board[x][y][1] === "s") {
-					drawCircle((width / 7) * (xt + 0.5), (height / 7) * (yt + 1.5), width / 200, col.black, col.black);
-				}
-			
-				if ((self.game.length % 2 === 0 && self.game[0] === "R") || (self.game.length % 2 !== 0 && self.game[0] === "Y")) {
-					colour1 = col.yellow;
-					colour2 = col.light_yellow;
-				}
-				else {
-					colour1 = col.red;
-					colour2 = col.light_red;
-				}
-				
-				if (x === self.slot && board[x][5] === "  " && self.input) {
-					drawCircle((width / 7) * (xt + 0.5), (height / 7) * 0.5, width / 20, colour1, colour2);
-				}
-			}
-		}
+		drawBoard();
 	};
 
 }
